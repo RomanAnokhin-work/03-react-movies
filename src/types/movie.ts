@@ -1,5 +1,5 @@
 export interface Movies {
-    results: Movie[];
+  results: Movie[];
 }
 
 export interface Movie {

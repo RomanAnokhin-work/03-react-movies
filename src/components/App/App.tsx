@@ -31,7 +31,7 @@ function App() {
       setIsLoading(false);
     }
   };
- 
+
   const openModal = (movie: Movie) => {
     setSelectedMovie(movie);
     setIsModalOpen(true);
@@ -50,7 +50,9 @@ function App() {
       ) : null}
       {isLoading && <Loader />}
       {isError && <ErrorMessage />}
-      {isModalOpen && selectedMovie && <MovieModal onClose={closeModal} movie={selectedMovie} />}
+      {isModalOpen && selectedMovie && (
+        <MovieModal onClose={closeModal} movie={selectedMovie} />
+      )}
       <Toaster position="top-center" reverseOrder={false} />
     </div>
   );
