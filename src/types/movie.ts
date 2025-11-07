@@ -1,7 +1,3 @@
-export interface Movies {
-  results: Movie[];
-}
-
 export interface Movie {
   id: number;
   poster_path: string;

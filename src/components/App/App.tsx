@@ -21,8 +21,10 @@ function App() {
       setIsLoading(true);
       setIsError(false);
       const response = await getMovies(query);
-      if (!movies) {
+
+      if (response.length === 0) {
         toast.error("No movies found for your request.");
+        return;
       }
       setMovies(response);
     } catch {
