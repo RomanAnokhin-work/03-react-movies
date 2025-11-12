@@ -3,10 +3,8 @@ import type { Movie } from "../types/movie";
 
 const myKey = import.meta.env.VITE_TMDB_TOKEN;
 
-export interface GetMoviesResponse {
-  page: number;
+export interface Movies {
   results: Movie[];
-  total_pages: number;
 }
 
 const instance = axios.create({
@@ -18,9 +16,9 @@ const instance = axios.create({
   },
 });
 
-async function getMovies(movieQuery: string, currentPage: number): Promise<GetMoviesResponse> {
-  const {data} = await instance.get<GetMoviesResponse>(`/movie?query=${movieQuery}&page=${currentPage}`);
+async function getMovies(movieQuery: string): Promise<Movie[]> {
+  const response = await instance.get<Movies>(`/movie?query=${movieQuery}`);
 
-  return data;
+  return response.data.results;
 }
 export default getMovies;

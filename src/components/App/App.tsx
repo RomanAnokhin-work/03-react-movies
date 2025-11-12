@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import css from "./App.module.css";
 import SearchBar from "../SearchBar/SearchBar";
 import getMovies from "../../services/movieService";
@@ -8,25 +7,31 @@ import Loader from "../Loader/Loader";
 import ErrorMessage from "../ErrorMessage/ErrorMessage";
 import MovieModal from "../MovieModal/MovieModal";
 import type { Movie } from "../../types/movie";
-import  { Toaster } from "react-hot-toast";
-import ReactPaginate from "react-paginate";
+import toast, { Toaster } from "react-hot-toast";
 
 function App() {
-  const [query, setQuery] = useState<string>("");
-  const [currentPage, setCurrentPage] = useState(1);
-
+  const [movies, setMovies] = useState<Movie[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isError, setIsError] = useState<boolean>(false);
   const [isModalOpen, setIsModalOpen] = useState<boolean>(false);
   const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
 
-  const { data, error, isLoading, isError, isSuccess } = useQuery({
-    queryKey: ["movies", query, currentPage],
-    queryFn: () => getMovies(query, currentPage),
-    enabled: query !== "",
-    placeholderData: keepPreviousData,
-  });
+  const handleQuery = async (query: string) => {
+    try {
+      setIsLoading(true);
+      setIsError(false);
+      const response = await getMovies(query);
 
-  const handleQuery = (query: string) => {
-    setQuery(query);
+      if (response.length === 0) {
+        toast.error("No movies found for your request.");
+        return;
+      }
+      setMovies(response);
+    } catch {
+      setIsError(true);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const openModal = (movie: Movie) => {
@@ -38,34 +43,15 @@ function App() {
     setSelectedMovie(null);
     setIsModalOpen(false);
   };
-  const totalPages = data?.total_pages || 0;
-  const page = currentPage;
-
-  const setPage = (pageNumber: number) => {
-    setCurrentPage(pageNumber);
-  };
 
   return (
     <div className={css.app}>
-      {isSuccess && totalPages > 1 && 
-        <ReactPaginate
-          pageCount={totalPages}
-          pageRangeDisplayed={5}
-          marginPagesDisplayed={1}
-          onPageChange={({ selected }) => setPage(selected + 1)}
-          forcePage={page - 1}
-          containerClassName={css.pagination}
-          activeClassName={css.active}
-          nextLabel="→"
-          previousLabel="←"
-        />
-      }
       <SearchBar onSubmit={handleQuery} />
-      {isSuccess ? (
-        <MovieGrid onSelect={openModal} movies={data.results} />
+      {movies.length > 0 ? (
+        <MovieGrid onSelect={openModal} movies={movies} />
       ) : null}
       {isLoading && <Loader />}
-      {isError && <ErrorMessage error={error} />}
+      {isError && <ErrorMessage />}
       {isModalOpen && selectedMovie && (
         <MovieModal onClose={closeModal} movie={selectedMovie} />
       )}
